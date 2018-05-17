@@ -12,7 +12,7 @@ pip install -e .
 
 ## Usage
 
-- Start a child process and collect every line from its `stdout` asynchronously via callback.
+- **Start a child process and collect every line from its `stdout` asynchronously via callback.**
 
     The callbacks will be initiated from a separate thread.
 
@@ -48,13 +48,13 @@ pip install -e .
     s.join()
     ```
 
-- Start a python script in a separate process and exchange python objects with it.
+- **Start a python script in a separate process and interactively exchange python objects with it.**
 
   Good for scenarios where the `multiprocessing` package doesn't fit. For example when you don't want to run the master's script again (may have side effect) to instantiate a slave.
 
-  For inter-process communication, `multiprocessing` suggest using a `Queue` based on pipes, while here we implemented a replacement using `Socket`. You may `send()` anything that is pickle-able and `recv()` it from the other side.
+  For inter-process communication, `multiprocessing` suggest using a `Queue` based on pipes, whose cross-platform behavior is weird, so here we implemented a replacement using `Socket`. You may `send()` anything that is pickle-able and `recv()` it from the other side.
 
-  The new python process's `stdin` is closed on initialization.
+  Note: the new python process's `stdin` is closed on initialization.
 
   ```python
   from llll import PythonInstance
@@ -94,3 +94,46 @@ pip install -e .
   ```
 
   You have to deal with all exceptions in the started script to prevent it from exiting. We offer no inter-process error handling; you can implement that yourself, or use the Pyro library instead, which supports inter-process error handling over Internet.
+
+- **Start a PoolMaster, which then starts a pool of python process as slaves, each having the same function waiting for calls from the master.**
+
+  The call to the function on the master side will block (1) if no slaves are available and (2) before the computation is done.
+
+  ```python
+  from llll import PoolMaster
+
+  # fibonacci in separate processes
+  code = '''
+  def fib(n):
+      if n <= 2:
+          return 1
+      return fib(n-1) + fib(n-2)
+
+  from llll import PoolSlave
+  PoolSlave(fib)
+  '''
+
+  pm = PoolMaster(code, nproc=6)
+
+  # calling this way will not result in acceleration
+  for i in range(1,33):
+      print(i, pm.call(i))
+  ```
+
+  Since the calls are blocking, you are expected to call from different threads to exploit parallelism.
+
+- **Given a PoolMaster of a function, map that function to an array, exploit parallelism using a pool of threads.**
+
+  ```python
+  from llll import MultithreadedMapper
+  mm = MultithreadedMapper(nthread=6)
+
+  arr = list(range(1,33))
+
+  # Note: MultithreadedMapper is not thread-safe.
+  result = mm.map(lambda n:pm.call(n), arr)
+
+  for i,r in zip(arr, result):
+    print(i,r)
+
+  ```

@@ -85,13 +85,11 @@ for i,v in enumerate( mm.map(fib, list(range(1,33))) ):
     print(i+1,v)
 print('time:',time.time()-start)
 
-def fib2(n):
-    return pm.call(n)
-
 print('MultithreadedMapper + PoolMaster')
 start = time.time()
-for i,v in enumerate( mm.map(fib2, list(range(1,33))) ):
-    print(i+1,v)
+arr = list(range(1,33))
+for i,v in zip( arr, mm.map(lambda n:pm.call(n), arr) ):
+    print(i,v)
 print('time:',time.time()-start)
 
 #
