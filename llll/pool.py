@@ -29,7 +29,7 @@ def PoolSlave(f):
         isbc.send(f(*a, **kw))
 
 class FIFO: # fifo with Semaphores
-    def __init__(self, capacity, timeout=0.1):
+    def __init__(self, capacity, timeout=0.5):
         self.sem = th.Semaphore(0)
         self.nsem = th.Semaphore(capacity)
         self.capacity=capacity
@@ -43,7 +43,7 @@ class FIFO: # fifo with Semaphores
 
     def get(self, *a, **k):
         while not self.sem.acquire(timeout=self.timeout):
-            print('waiting for pop()...')
+            print('waiting for the other end to put()...')
         stuff = self.q.popleft()
         self.nsem.release()
         return stuff
