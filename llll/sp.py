@@ -89,7 +89,7 @@ class Subprocess:
                     # wait for the two other threads to finish..
                     if self.verbose:
                         print('[run_subprocess] joining threads 0 and 1')
-                        
+
                     [self.threads[k].join() for k in [0,1]]
 
                     if self.verbose:
@@ -173,7 +173,7 @@ def test_functionality():
         verbose = True,
     )
 
-    time.sleep(2)
+    time.sleep(1.5)
     s.kill()
     s.join()
 
@@ -184,7 +184,7 @@ def test_functionality():
         verbose = True,
     )
 
-    s.write('raise NotImplementedError("okay!")\n\n'.encode('utf-8'))
+    s.write('raise NotImplementedError("if you see this message, stderr redirection is working.")\n\n'.encode('utf-8'))
     s.write_done()
     s.join()
 
