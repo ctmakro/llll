@@ -137,3 +137,10 @@ pip install -e .
     print(i,r)
 
   ```
+
+- **PythonInstance() and PoolMaster() accepts both code and filename.**
+
+  ```python
+  pm = PoolMaster('print("hello world!")', nproc=6)
+  pm = PoolMaster('code.py', is_filename=True, nproc=6)
+  ```
