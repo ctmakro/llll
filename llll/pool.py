@@ -5,9 +5,15 @@ import random
 import threading as th
 from collections import deque
 
+def how_many_cpu():
+    import psutil
+    ncpu = psutil.cpu_count()
+    print(ncpu, 'cpu(s) found')
+    return ncpu
+
 class PoolMaster:
-    def __init__(self, slave, nproc, is_filename=False):
-        assert nproc > 0
+    def __init__(self, slave, nproc=None, is_filename=False):
+        if nproc is None: nproc = how_many_cpu()
 
         self.fifo = FIFO(nproc)
         for i in range(nproc):
@@ -51,9 +57,7 @@ class FIFO: # fifo with Semaphores
 class MultithreadedGenerator:
     def __init__(self, generator, buffer_capacity=None, ncpu=None):
         if ncpu is None:
-            import psutil
-            ncpu = psutil.cpu_count()
-            print(ncpu, 'cpu found')
+            ncpu = how_many_cpu()
 
         if buffer_capacity is None:
             buffer_capacity = ncpu*2
@@ -79,9 +83,7 @@ class MultithreadedGenerator:
 class MultithreadedMapper:
     def __init__(self, nthread=None):
         if nthread is None:
-            import psutil
-            nthread = psutil.cpu_count()
-            print(nthread, 'cpu found')
+            nthread = how_many_cpu()
 
         self.ififo = FIFO(nthread+2, timeout=None)
         self.ofifo = FIFO(nthread+2, timeout=None)
